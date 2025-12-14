@@ -1,201 +1,78 @@
+let loadMoreBtn = document.querySelector('#load-more');
+let currentItem = 8;
 
-<script>
-  // ====== LOAD MORE ======
-  const loadMoreBtn = document.querySelector('#load-more');
-  let currentItem = 8; // cantidad inicial visible (coincide con el CSS)
-
-  if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', () => {
-      const boxes = [...document.querySelectorAll('.boxes-container .box')];
-      const next = Math.min(currentItem + 4, boxes.length);
-      for (let i = currentItem; i < next; i++) {
-        if (boxes[i]) boxes[i].style.display = 'inline-block'; // style correcto + sin espacio
-      }
-      currentItem = next;
-      if (currentItem >= boxes.length) {
-        load        loadMoreBtn.style.display = 'none';
-      }
-    });
-  }
-
-  // ====== CARRITO ======
-  const carritoSection = document.getElementById('carrito');
-  const productosContainer = document.getElementById('productos');
-  const listaTbody = document.querySelector('#lista-carrito tbody');
-  const vaciarCarritoBtn = document.getElementById('vaciar-carrito');
-  const quitarSeleccionadosBtn = document.getElementById('quitar-seleccionados');
-
-  // Estructura interna del carrito: {id, titulo, precio, imagen, cantidad, seleccionado}
-  const carritoItems = [];
-
-  // Delegación: agregar al carrito desde cualquier .box
-  if (productosContainer) {
-    productosContainer.addEventListener('click', (e) => {
-      const btn = e.target.closest('.agregar-carrito');
-      if (!btn) return;
-
-      e.preventDefault();
-      const card = btn.closest('.box');
-      if (!card) return;
-
-      const id = card.dataset.id || (window.crypto?.randomUUID?.() ?? String(Date.now()));
-      const tituloEl = card.querySelector('.titulo');
-      const precioEl = card.querySelector('.precio');
-      const imgEl = card.querySelector('img');
-
-      const titulo = tituloEl ? tituloEl.textContent.trim() : 'Producto';
-      // Usa data-precio si existe; si no, extrae dígitos del texto
-      const precio = precioEl
-        ? Number(precioEl.dataset?.precio ?? precioEl.textContent.replace(/[^\d]/g, '')) || 0
-        : 0;
-      const imagen = imgEl ? imgEl.src : '';
-
-      agregarAlCarrito({ id, titulo, precio, imagen });
-
-      // Ir al carrito (scroll suave)
-      if (carritoSection) {
-        carritoSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        location.hash = '#carrito';
-      }
-    });
-  }
-
-  // Borrar individual, seleccionar y cambiar cantidad dentro del carrito
-  if (carritoSection) {
-    carritoSection.addEventListener('click', (e) => {
-      // Borrar un item
-      if (e.target.classList.contains('borrar-item')) {
-        e.preventDefault();
-        const tr = e.target.closest('tr');
-        const id = tr?.dataset.id;
-        if (!id) return;
-        eliminarDelCarrito(id);
-      }
-    });
-
-    // Seleccionar/deseleccionar (checkbox en cada fila)
-    listaTbody.addEventListener('change', (e) => {
-      const chk = e.target.closest('.seleccionar-item');
-      if (!chk) return;
-      const tr = chk.closest('tr');
-      const id = tr?.dataset.id;
-      if (!id) return;
-      marcarSeleccion(id, chk.checked);
-    });
-
-    // Cambiar cantidad
-    listaTbody.addEventListener('input', (e) => {
-      const qtyInput = e.target.closest('.cantidad-input');
-      if (!qtyInput) return;
-      const tr = qtyInput.closest('tr');
-      const id = tr?.dataset.id;
-      const nueva = Math.max(1, Number(qtyInput.value) || 1);
-      cambiarCantidad(id, nueva);
-    });
-  }
-
-  // Vaciar carrito
-  if (vaciarCarritoBtn) {
-    vaciarCarritoBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      carritoItems.length = 0;
-      renderCarrito();
-    });
-  }
-
-  // Quitar seleccionados
-  if (quitarSeleccionadosBtn) {
-    quitarSeleccionadosBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      for (let i = carritoItems.length - 1; i >= 0; i--) {
-        if (carritoItems[i].seleccionado) carritoItems.splice(i, 1);
-      }
-      renderCarrito();
-    });
-  }
-
-  // ====== LÓGICA ======
-  function agregarAlCarrito(item) {
-    const existente = carritoItems.find((x) => x.id === item.id);
-    if (existente) {
-      existente.cantidad += 1;
-    } else {
-      carritoItems.push({
-        id: item.id,
-        titulo: item.titulo,
-        precio: item.precio,
-        imagen: item.imagen,
-        cantidad: 1,
-        seleccionado: false,
-      });
+loadMoreBtn.onclick = () => {
+    let boxes = [...document.querySelectorAll('.boxes-container .box')];
+    for(var i = currentItem; i < currentItem + 4; i++) {
+        boxes[i].Style.display = 'inline-block';
     }
-    renderCarrito();
-  }
-
-  function eliminarDelCarrito(id) {
-    const idx = carritoItems.findIndex((x) => x.id === id);
-    if (idx >= 0) {
-      carritoItems.splice(idx, 1);
-      renderCarrito();
+    currentItem += 4;
+    if(currentItem >= boxes.length) {
+        loadMoreBtn.Style.display ='none'
     }
-  }
+}
 
-  function marcarSeleccion(id, checked) {
-    const it = carritoItems.find((x) => x.id === id);
-    if (it) {
-      it.seleccionado = checked;
-      // Actualiza estilo de la fila sin re-render completo
-      const fila = listaTbody.querySelector(`tr[data-id="${CSS.escape(id)}"]`);
-      fila?.classList.toggle('seleccionado', checked);
+//carrito
+const carrito = document.getElementById('carrito');
+const elementos1 = document.getElementById('lista-1');
+const lista = document.querySelector('#lista-carrito tbody');
+const vaciarCarritoBtn = document.getElementById('vaciar-carrito');
+
+cargarEventListeners();
+
+function cargarEventListeners(){
+    elementos1.addEventListener('click',comprarElemento);
+    carrito.addEventListener('click',eliminarElemento);
+    vaciarCarritoBtn.addEventListener('click',vaciarCarrito);
+}
+function comprarElemento(e){
+    e.preventDefault();
+    if(e.target.classList.contains('agreagr-carrito')){
+        const elemento = e.target.parentElement.parentElement;
+        leerDatosElemento(elemento);
     }
-  }
-
-  function cambiarCantidad(id, cantidad) {
-    const it = carritoItems.find((x) => x.id === id);
-    if (it) {
-      it.cantidad = cantidad;
-      renderCarrito();
+}
+function leerDatosElemento(elemento){
+    const infoElemento ={
+        imagen: elemento.querySelector('img').src,
+        titulo: elemento.querySelector('h3').textContent,
+        precio: elemento.querySelector('precio').textContent,
+        id: elemento.querySelector('a').getAttribute('data-id')
     }
-  }
-
-  function renderCarrito() {
-    if (!listaTbody) return;
-    listaTbody.innerHTML = '';
-
-    carritoItems.forEach((it) => {
-      const tr = document.createElement('tr');
-      tr.dataset.id = it.id;
-      tr.classList.toggle('seleccionado', it.seleccionado);
-      tr.innerHTML = `
-        <td>
-          <input type="checkbox" class="seleccionar-item" ${it.seleccionado ? 'checked' : ''} />
+    insertarCarrito(infoelemento);
+}
+function insertarCarrito(elemento){
+    const row = document.createElement(`tr`)
+        row.innerHTML = `
+    <td>
+        <img src="${elemento.imagen}"widtn=100 height=150px >
+    </td>
+    <td>
+        ${elemento.titulo}
+    </td>
+    <td>
+        ${elemento. precio}
         </td>
         <td>
-          ${it.imagen ? `${it.imagen}` : ''}
-        </td>
-        <td>${escapeHtml(it.titulo)}</td>
-        <td>$${formatearPrecio(it.precio)}</td>
-        <td>
-          <input type="number" class="cantidad-input" min="1" value="${it.cantidad}">
-        </td>
-        <td>
-          #x</a>
-        </td>
-      `;
-      listaTbody.appendChild(tr);
-    });
-  }
+            <a herf="#" class="borrar" data-id="${elemento.id}" >x</a>
+            </td>
+        `;
+            lista.appendChild(row);
+           }
+            function eliminarElemento(e){
+                e.preventDefault();
+                let elemento,
+                elementoId;
+                if(e.target.classList.contains(`borrar`)){
+                    e.target.parentElement.parentElement.remove();
+                    elemento = e.target.parentElement.parentElement;
+                    elementoId = elemento.querySelector(`a`).getAttribute(`data-id`);
+                }
 
-  // Utilidades
-  function formatearPrecio(n) {
-    return Number(n).toLocaleString('es-CO');
-  }
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#039;');
-  }
-
+            }
+            function vaciarCarrito(){
+                while(lista.firstChild){
+                    lista.removeChild(lista.firstChild);
+                }
+                return false;
+            }
