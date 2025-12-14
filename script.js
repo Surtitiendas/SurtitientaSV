@@ -1,4 +1,5 @@
 let loadMoreBtn = document.querySelector('#load-more');
+let loadMoreBtn = document.querySelector('#load-more');
 let currentItem = 8;
 
 loadMoreBtn.onclick = () => {
@@ -19,7 +20,7 @@ const vaciarCarritoBtn = document.getElementById('vaciar-carrito');
 
 cargarEventListeners();
 function cargarEventListeners(){
-    elementos.addEventListener('click',comprarElemento);
+    elementos1.addEventListener('click',comprarElemento);
     carrito.addEventListener('click',eliminarElemento);
     vaciarCarritoBtn.addEventListener('click',vaciarCarrito);
 }
@@ -41,7 +42,36 @@ function leerDatosElemento(elemeto){
 }
 function insertarCarrito(elemento){
     const row = document.createElement('tr');
-    row.innerHTML = ``
-    
-
+    row.innerHTML = `
+    <td>
+        <img src="${elemento.imagen}"widtn=100 height=150px >
+    </td>
+    <td>
+        ${elemento.titulo}
+    </td>
+    <td>
+        ${elemento. precio}
+        </td>
+        <td>
+            <a herf="#" class="borrar" data-id="${elemento.id}" >x</a>
+            </td>
+        `;
+            lista.appendChild(row);
 }
+            function eliminarElemento(e){
+                e.preventDefault();
+                let elemento,
+                elementoId;
+                if(e.target.classList.contains(`borrar`)){
+                    e.target.parentElement.parentElement.remove();
+                    elemento = e.target.parentElement.parentElement;
+                    elementoId = elemento.querySelector(`a`).getAttribute(`data-id`);
+                }
+
+            }
+            function vaciarCarrito(){
+                while(lista.firstChild){
+                    lista.removeChild(lista.firstChild);
+                }
+                return false;
+            }
